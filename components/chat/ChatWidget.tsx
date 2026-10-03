@@ -9,10 +9,15 @@ export default function ChatWidget() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [newestId, setNewestId] = useState<string | null>(null);
   const supabase = createClient();
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Subscribe to realtime messages once we have a conversation
+  // Subscribe to realtime messages once we have a conversation.
+  // Visitor's own messages are added optimistically on send (below),
+  // so here we only react to staff/system messages coming back in —
+  // otherwise the visitor would see their own message twice.
   useEffect(() => {
     if (!conversationId) return;
 
@@ -27,7 +32,11 @@ export default function ChatWidget() {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
+          const incoming = payload.new as Message;
+          if (incoming.sender === "visitor") return;
+          setMessages((prev) => [...prev, incoming]);
+          setNewestId(incoming.id);
+          setTimeout(() => setNewestId(null), 900);
         }
       )
       .subscribe();
@@ -42,20 +51,48 @@ export default function ChatWidget() {
   }, [messages]);
 
   async function sendMessage() {
-    if (!input.trim()) return;
+    const text = input.trim();
+    if (!text || sending) return;
 
-    // First message: create the conversation, then the message.
-    // POST to /api/messages — that route handles both the insert
-    // and kicking off the Phase 6 timeout job (QStash).
-    const res = await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversationId, body: input }),
-    });
+    setSending(true);
+    const tempId = `temp-${Date.now()}`;
 
-    const data = await res.json();
-    if (!conversationId) setConversationId(data.conversationId);
+    // Show it immediately — don't wait on the network or realtime.
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: tempId,
+        conversation_id: conversationId ?? "",
+        sender: "visitor",
+        body: text,
+        created_at: new Date().toISOString(),
+      },
+    ]);
     setInput("");
+
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId, body: text }),
+      });
+
+      if (!res.ok) throw new Error("Send failed");
+      const data = await res.json();
+      if (!conversationId) setConversationId(data.conversationId);
+
+      setNewestId(tempId);
+      setTimeout(() => setNewestId(null), 900);
+    } catch {
+      // Mark the optimistic bubble as failed rather than losing it silently.
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId ? { ...m, body: `${m.body} (failed to send)` } : m
+        )
+      );
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -93,12 +130,16 @@ export default function ChatWidget() {
             {messages.map((m) => (
               <div
                 key={m.id}
-                className={`max-w-[85%] rounded-xl px-3 py-2 text-[13.5px] ${
+                className={`max-w-[85%] rounded-xl px-3 py-2 text-[13.5px] transition-shadow duration-700 ${
                   m.sender === "visitor"
                     ? "ml-auto bg-blue text-white"
                     : m.sender === "system"
                     ? "bg-paper text-mute"
                     : "bg-paper text-ink"
+                } ${
+                  m.id === newestId
+                    ? "shadow-[0_0_0_4px_rgba(60,140,255,0.35)]"
+                    : "shadow-none"
                 }`}
               >
                 {m.body}
@@ -113,13 +154,15 @@ export default function ChatWidget() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Type a message..."
-              className="flex-1 rounded-lg border border-line bg-paper px-3 py-2 text-[13.5px] outline-none"
+              disabled={sending}
+              className="flex-1 rounded-lg border border-line bg-paper px-3 py-2 text-[13.5px] outline-none disabled:opacity-60"
             />
             <button
               onClick={sendMessage}
-              className="rounded-lg bg-navy px-3 py-2 text-sm font-semibold text-white"
+              disabled={sending}
+              className="rounded-lg bg-navy px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
-              Send
+              {sending ? "…" : "Send"}
             </button>
           </div>
         </div>
