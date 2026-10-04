@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 export async function POST(req: Request) {
   const { conversationId, body, visitorName, visitorEmail } =
@@ -11,6 +12,7 @@ export async function POST(req: Request) {
 
   const supabase = await createClient();
   let convoId: string = conversationId;
+  let isNewConversation = false;
 
   // First message in a new chat: create the conversation row first.
   if (!convoId) {
@@ -30,6 +32,7 @@ export async function POST(req: Request) {
       );
     }
     convoId = conversation.id;
+    isNewConversation = true;
   }
 
   const { error: msgError } = await supabase.from("messages").insert({
@@ -42,7 +45,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: msgError.message }, { status: 500 });
   }
 
-  // TODO (Phase 5): ping the Telegram bot so staff get an instant alert
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  await sendTelegramMessage(
+    `💬 *${isNewConversation ? "New chat" : "New message"}*\n` +
+      `${visitorName ? visitorName + "\n" : ""}` +
+      `"${body}"\n\n` +
+      `Reply: ${siteUrl}/inbox`
+  );
+
   // TODO (Phase 6): schedule a QStash job for +5 minutes that checks
   // whether this conversation has been replied to, and if not, inserts
   // a system message with the "Call us" fallback.

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 export async function POST(req: Request) {
   const { name, organization, email, phone, serviceInterest, message } =
@@ -26,8 +27,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // TODO (Phase 5): notify staff via Telegram when a new lead comes in,
-  // same bot used for chat message alerts.
+  await sendTelegramMessage(
+    `📋 *New consultation request*\n` +
+      `${name}${organization ? " — " + organization : ""}\n` +
+      `${email}${phone ? " · " + phone : ""}\n` +
+      `Interested in: ${serviceInterest ?? "Not specified"}\n` +
+      `${message ? `"${message}"` : ""}`
+  );
 
   return NextResponse.json({ success: true });
 }
