@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Message } from "@/types";
 
+const STORAGE_KEY = "majeurs_conversation_id";
+
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -11,8 +13,36 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [newestId, setNewestId] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const supabase = createClient();
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // On mount: resume a previous conversation from this browser, if one exists.
+  useEffect(() => {
+    const savedId = localStorage.getItem(STORAGE_KEY);
+    if (!savedId) {
+      setLoaded(true);
+      return;
+    }
+
+    async function resume() {
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", savedId)
+        .order("created_at", { ascending: true });
+
+      if (data && data.length > 0) {
+        setConversationId(savedId);
+        setMessages(data);
+      } else {
+        // Conversation vanished or had no messages — start fresh next time.
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      setLoaded(true);
+    }
+    resume();
+  }, [supabase]);
 
   // Subscribe to realtime messages once we have a conversation.
   // Visitor's own messages are added optimistically on send (below),
@@ -79,7 +109,10 @@ export default function ChatWidget() {
 
       if (!res.ok) throw new Error("Send failed");
       const data = await res.json();
-      if (!conversationId) setConversationId(data.conversationId);
+      if (!conversationId) {
+        setConversationId(data.conversationId);
+        localStorage.setItem(STORAGE_KEY, data.conversationId);
+      }
 
       setNewestId(tempId);
       setTimeout(() => setNewestId(null), 900);
@@ -94,6 +127,10 @@ export default function ChatWidget() {
       setSending(false);
     }
   }
+
+  // Don't render the floating button until we know whether to resume
+  // a conversation — avoids a flash of the empty-state intro.
+  if (!loaded) return null;
 
   return (
     <>
