@@ -19,29 +19,39 @@ export default function ChatWidget() {
 
   // On mount: resume a previous conversation from this browser, if one exists.
   useEffect(() => {
-    const savedId = localStorage.getItem(STORAGE_KEY);
-    if (!savedId) {
-      setLoaded(true);
-      return;
-    }
+    let cancelled = false;
 
-    async function resume() {
-      const { data } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("conversation_id", savedId)
-        .order("created_at", { ascending: true });
+    async function init() {
+      // Pushes every setState below past the current render — avoids
+      // calling setState synchronously inside the effect body.
+      await Promise.resolve();
 
-      if (data && data.length > 0) {
-        setConversationId(savedId);
-        setMessages(data);
-      } else {
-        // Conversation vanished or had no messages — start fresh next time.
-        localStorage.removeItem(STORAGE_KEY);
+      const savedId = localStorage.getItem(STORAGE_KEY);
+      if (savedId) {
+        const { data } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("conversation_id", savedId)
+          .order("created_at", { ascending: true });
+
+        if (cancelled) return;
+
+        if (data && data.length > 0) {
+          setConversationId(savedId);
+          setMessages(data);
+        } else {
+          // Conversation vanished or had no messages — start fresh next time.
+          localStorage.removeItem(STORAGE_KEY);
+        }
       }
-      setLoaded(true);
+
+      if (!cancelled) setLoaded(true);
     }
-    resume();
+
+    init();
+    return () => {
+      cancelled = true;
+    };
   }, [supabase]);
 
   // Subscribe to realtime messages once we have a conversation.
