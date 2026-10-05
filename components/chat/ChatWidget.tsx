@@ -143,6 +143,14 @@ export default function ChatWidget() {
                 }`}
               >
                 {m.body}
+                {m.sender === "system" && (
+                  <a
+                    href="tel:+254700123456"
+                    className="mt-2 flex items-center justify-center gap-1.5 rounded-lg bg-navy py-2 text-[13px] font-semibold text-white"
+                  >
+                    📞 Call us
+                  </a>
+                )}
               </div>
             ))}
             <div ref={bottomRef} />

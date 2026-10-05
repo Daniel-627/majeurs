@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { scheduleTimeoutCheck } from "@/lib/qstash";
 
 export async function POST(req: Request) {
   const { conversationId, body, visitorName, visitorEmail } =
@@ -53,9 +54,11 @@ export async function POST(req: Request) {
       `Reply: ${siteUrl}/inbox`
   );
 
-  // TODO (Phase 6): schedule a QStash job for +5 minutes that checks
-  // whether this conversation has been replied to, and if not, inserts
-  // a system message with the "Call us" fallback.
+  // One timer per conversation, started on its first message — not one
+  // per message, so replying doesn't need to cancel a pile of timers.
+  if (isNewConversation) {
+    await scheduleTimeoutCheck(convoId);
+  }
 
   return NextResponse.json({ conversationId: convoId });
 }
