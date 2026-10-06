@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const links = [
   { href: "/about", label: "About" },
@@ -16,10 +16,14 @@ export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  // Close the mobile menu automatically whenever the route changes.
-  useEffect(() => {
+  // Close the mobile menu whenever the route changes. Comparing during
+  // render (React's sanctioned pattern for this) instead of in an effect —
+  // avoids the setState-in-effect cascading-render warning.
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   function isActive(href: string) {
     return pathname === href || pathname.startsWith(href + "/");
