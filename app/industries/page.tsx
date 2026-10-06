@@ -3,8 +3,45 @@ import Link from "next/link";
 import { industries } from "@/lib/data/industries";
 
 export const metadata: Metadata = {
-  title: "Industries — Majeurs Ltd",
+  title: "Industries",
+  description:
+    "Accounting and advisory services tailored for SMEs, startups, individuals and NGOs across Kenya.",
 };
+
+function IndustryCard({
+  slug,
+  name,
+  dek,
+  large = false,
+}: {
+  slug: string;
+  name: string;
+  dek: string;
+  large?: boolean;
+}) {
+  return (
+    <Link
+      href={`/industries/${slug}`}
+      className={`group rounded-2xl border border-line bg-white transition-colors hover:border-navy hover:bg-navy ${
+        large ? "p-10" : "p-9"
+      }`}
+    >
+      <div className="font-mono text-[12.5px] text-blue transition-colors group-hover:text-blue-light">
+        /industries/{slug}
+      </div>
+      <h2
+        className={`mt-3.5 transition-colors group-hover:text-white ${
+          large ? "text-[28px]" : "text-[24px]"
+        }`}
+      >
+        {name}
+      </h2>
+      <p className="mt-3 max-w-md text-[14.5px] text-mute transition-colors group-hover:text-[#9FB4CC]">
+        {dek}
+      </p>
+    </Link>
+  );
+}
 
 export default function IndustriesPage() {
   const [smes, startups, individuals, ngos] = industries;
@@ -26,58 +63,18 @@ export default function IndustriesPage() {
       <section className="mx-auto max-w-6xl px-8 pb-24">
         <div className="grid gap-5 sm:grid-cols-[1.3fr_0.7fr]">
           <div className="flex flex-col gap-5">
-            <Link
-              href={`/industries/${smes.slug}`}
-              className="rounded-2xl bg-navy p-10"
-            >
-              <div className="font-mono text-[12.5px] text-blue-light">
-                /industries/{smes.slug}
-              </div>
-              <h2 className="mt-3.5 text-[28px] text-white">{smes.name}</h2>
-              <p className="mt-3 max-w-md text-[14.5px] text-[#9FB4CC]">
-                {smes.dek}
-              </p>
-            </Link>
-            <Link
-              href={`/industries/${startups.slug}`}
-              className="rounded-2xl border border-line bg-white p-9"
-            >
-              <div className="font-mono text-[12.5px] text-blue">
-                /industries/{startups.slug}
-              </div>
-              <h2 className="mt-3.5 text-[24px]">{startups.name}</h2>
-              <p className="mt-3 max-w-md text-[14.5px] text-mute">
-                {startups.dek}
-              </p>
-            </Link>
+            <IndustryCard slug={smes.slug} name={smes.name} dek={smes.dek} large />
+            <IndustryCard slug={startups.slug} name={startups.name} dek={startups.dek} />
           </div>
           <div className="flex flex-col gap-5">
-            <Link
-              href={`/industries/${individuals.slug}`}
-              className="rounded-2xl border border-line bg-white p-9"
-            >
-              <div className="font-mono text-[12.5px] text-blue">
-                /industries/{individuals.slug}
-              </div>
-              <h2 className="mt-3.5 text-[24px]">{individuals.name}</h2>
-              <p className="mt-3 text-[14.5px] text-mute">{individuals.dek}</p>
-            </Link>
-            <Link
-              href={`/industries/${ngos.slug}`}
-              className="rounded-2xl border border-line bg-white p-9"
-            >
-              <div className="font-mono text-[12.5px] text-blue">
-                /industries/{ngos.slug}
-              </div>
-              <h2 className="mt-3.5 text-[24px]">{ngos.name}</h2>
-              <p className="mt-3 text-[14.5px] text-mute">{ngos.dek}</p>
-            </Link>
+            <IndustryCard slug={individuals.slug} name={individuals.name} dek={individuals.dek} />
+            <IndustryCard slug={ngos.slug} name={ngos.name} dek={ngos.dek} />
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-8 pb-24">
-        <div className="flex flex-wrap items-center justify-between gap-8 rounded-2xl bg-paper p-11 sm:p-14" style={{ border: "1px solid #DEE6EF" }}>
+        <div className="flex flex-wrap items-center justify-between gap-8 rounded-2xl border border-line bg-paper p-11 sm:p-14">
           <div>
             <h2 className="max-w-xs text-[26px] sm:text-[30px]">
               Don&apos;t see your situation here?

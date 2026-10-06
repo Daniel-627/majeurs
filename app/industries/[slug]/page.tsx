@@ -14,7 +14,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const industry = getIndustryBySlug(slug);
-  return { title: industry ? `${industry.name} — Majeurs Ltd` : "Industries — Majeurs Ltd" };
+  if (!industry) return { title: "Industries" };
+  return { title: industry.name, description: industry.dek };
 }
 
 export default async function IndustryDetailPage({

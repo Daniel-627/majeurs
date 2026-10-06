@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import AvatarImage from "@/components/ui/AvatarImage";
 
 export const metadata: Metadata = {
-  title: "About — Majeurs Ltd",
+  title: "About",
+  description:
+    "Learn about Majeurs Ltd — our story, mission, values and the team behind our accounting, tax and advisory services in Kenya.",
 };
 
 const values = [
@@ -19,19 +22,17 @@ const timeline = [
   ["2025–26", "Business advisory formalized as clients ask for more than compliance — for direction."],
 ];
 
+// Photo path convention: /public/images/team/<slug>.jpg
+// Drop a photo in with the matching filename and it's used automatically —
+// nothing else needs editing. No file there yet? The navy initial avatar
+// (already built) shows instead, so the site works either way.
 const team = [
-  ["A", "Amina K.", "Founder & Managing Partner", "Leads client strategy and oversees audit & assurance."],
-  ["D", "David O.", "Head of Tax", "Manages compliance, filings and tax planning for the firm's clients."],
-  ["C", "Christine M.", "Head of Bookkeeping", "Runs day-to-day reconciliation and financial reporting."],
+  { slug: "amina", initial: "A", name: "Amina K.", role: "Founder & Managing Partner", bio: "Leads client strategy and oversees audit & assurance." },
+  { slug: "david", initial: "D", name: "David O.", role: "Head of Tax", bio: "Manages compliance, filings and tax planning for the firm's clients." },
+  { slug: "christine", initial: "C", name: "Christine M.", role: "Head of Bookkeeping", bio: "Runs day-to-day reconciliation and financial reporting." },
 ];
 
-function Row({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="border-t border-line">
       <div className="mx-auto grid max-w-6xl gap-6 px-8 py-11 sm:grid-cols-[220px_1fr] sm:gap-14">
@@ -47,7 +48,7 @@ export default function AboutPage() {
     <>
       <header className="mx-auto max-w-6xl px-8 pb-10 pt-20">
         <div className="text-[13.5px] font-semibold text-blue">About Majeurs</div>
-        <h1 className="mt-4 max-w-xl text-[36px] sm:text-[46px]">
+        <h1 className="mt-4 max-w-xl text-[32px] sm:text-[46px]">
           More than accounting. A partner in your financial journey.
         </h1>
         <p className="mt-5 max-w-xl text-lg text-mute">
@@ -115,14 +116,17 @@ export default function AboutPage() {
       <Row label="Team">
         <h2 className="text-[26px]">The people behind the numbers</h2>
         <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {team.map(([initial, name, role, bio]) => (
-            <div key={name} className="rounded-2xl border border-line bg-white p-6">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-navy font-serif text-base text-white">
-                {initial}
-              </div>
-              <div className="text-[15.5px] font-semibold">{name}</div>
-              <div className="mt-0.5 text-[13px] text-blue">{role}</div>
-              <p className="mt-3 text-[13.5px] text-mute">{bio}</p>
+          {team.map((m) => (
+            <div key={m.name} className="rounded-2xl border border-line bg-white p-6">
+              <AvatarImage
+                src={`/images/team/${m.slug}.jpg`}
+                alt={m.name}
+                fallbackInitial={m.initial}
+                size={44}
+              />
+              <div className="mt-4 text-[15.5px] font-semibold">{m.name}</div>
+              <div className="mt-0.5 text-[13px] text-blue">{m.role}</div>
+              <p className="mt-3 text-[13.5px] text-mute">{m.bio}</p>
             </div>
           ))}
         </div>

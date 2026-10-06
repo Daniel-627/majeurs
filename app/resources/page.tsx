@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Resources — Majeurs Ltd",
+  title: "Resources",
+  description:
+    "Practical guides on VAT, PAYE and tax compliance, plus a running calendar of Kenyan statutory deadlines.",
 };
 
 // Static for now — swap for a CMS/MDX source once content volume grows.

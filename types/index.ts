@@ -16,3 +16,17 @@ export interface Message {
   body: string;
   created_at: string;
 }
+
+export type LeadStatus = "new" | "contacted" | "closed";
+
+export interface Lead {
+  id: string;
+  name: string;
+  organization: string | null;
+  email: string;
+  phone: string | null;
+  service_interest: string | null;
+  message: string | null;
+  status: LeadStatus;
+  created_at: string;
+}

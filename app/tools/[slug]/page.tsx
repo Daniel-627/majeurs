@@ -28,7 +28,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const tool = getToolBySlug(slug);
-  return { title: tool ? `${tool.title} — Majeurs Ltd` : "Tools — Majeurs Ltd" };
+  if (!tool) return { title: "Tools" };
+  return { title: tool.title, description: tool.desc };
 }
 
 export default async function ToolDetailPage({

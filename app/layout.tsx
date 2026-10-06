@@ -17,10 +17,30 @@ const fraunces = Fraunces({
   weight: ["400", "500", "600"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://majeurs.co.ke";
+const DESCRIPTION =
+  "Professional accounting, tax, and advisory services for businesses, startups, individuals and organizations across Kenya.";
+
 export const metadata: Metadata = {
-  title: "Majeurs Ltd — Clarity in Numbers. Confidence in Decisions.",
-  description:
-    "Professional accounting, tax, and advisory services for businesses, startups, individuals and organizations across Kenya.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Majeurs Ltd — Clarity in Numbers. Confidence in Decisions.",
+    template: "%s | Majeurs Ltd",
+  },
+  description: DESCRIPTION,
+  openGraph: {
+    title: "Majeurs Ltd",
+    description: DESCRIPTION,
+    siteName: "Majeurs Ltd",
+    type: "website",
+    images: ["/images/og-image.jpg"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Majeurs Ltd",
+    description: DESCRIPTION,
+    images: ["/images/og-image.jpg"],
+  },
 };
 
 export default function RootLayout({

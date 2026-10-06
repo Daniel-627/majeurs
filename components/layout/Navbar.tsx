@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const links = [
   { href: "/about", label: "About" },
@@ -9,10 +13,25 @@ const links = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  // Close the mobile menu automatically whenever the route changes.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  function isActive(href: string) {
+    return pathname === href || pathname.startsWith(href + "/");
+  }
+
   return (
     <nav className="sticky top-0 z-20 border-b border-line bg-paper/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-8 py-4">
-        <Link href="/" className="flex items-center gap-2.5 font-bold text-[17px] tracking-tight">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-8">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 text-[17px] font-bold tracking-tight"
+        >
           <svg width="26" height="22" viewBox="0 0 40 34" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 34V4L11 15V34H0Z" fill="#0B2035" />
             <path d="M22 34V4L11 15L22 26V34Z" fill="#0B2035" />
@@ -23,21 +42,82 @@ export default function Navbar() {
           MAJEURS LTD
         </Link>
 
-        <div className="hidden gap-8 text-[14.5px] font-medium text-mute md:flex">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-ink">
-              {link.label}
-            </Link>
-          ))}
+        {/* Desktop links */}
+        <div className="hidden gap-8 text-[14.5px] font-medium md:flex">
+          {links.map((link) => {
+            const active = isActive(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative pb-1 ${active ? "text-ink" : "text-mute hover:text-ink"}`}
+                aria-current={active ? "page" : undefined}
+              >
+                {link.label}
+                {active && (
+                  <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] rounded-full bg-blue" />
+                )}
+              </Link>
+            );
+          })}
         </div>
 
-        <Link
-          href="/contact"
-          className="whitespace-nowrap rounded-full bg-blue px-5 py-2.5 text-sm font-semibold text-white"
-        >
-          Book Consultation
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/contact"
+            className="hidden whitespace-nowrap rounded-full bg-blue px-5 py-2.5 text-sm font-semibold text-white sm:inline-block"
+          >
+            Book Consultation
+          </Link>
+
+          {/* Mobile menu toggle */}
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-line text-ink md:hidden"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+          >
+            {open ? (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M1 1L17 17M17 1L1 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            ) : (
+              <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+                <path d="M0 1H18M0 7H18M0 13H18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile dropdown panel */}
+      {open && (
+        <div className="border-t border-line bg-white px-6 py-4 md:hidden">
+          <div className="flex flex-col gap-1">
+            {links.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-lg px-3.5 py-2.5 text-[15px] font-medium ${
+                    active ? "bg-paper text-ink" : "text-mute"
+                  }`}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+            <Link
+              href="/contact"
+              className="mt-2 rounded-lg bg-navy px-3.5 py-3 text-center text-[15px] font-semibold text-white"
+            >
+              Book Consultation
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

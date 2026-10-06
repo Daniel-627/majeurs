@@ -154,7 +154,7 @@ export default function ChatWidget() {
       )}
 
       {open && (
-        <div className="fixed bottom-5 right-5 z-30 flex h-[480px] w-[340px] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
+        <div className="fixed bottom-5 right-5 z-30 flex h-[min(480px,calc(100vh-7rem))] w-[min(340px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
           <div className="flex items-center justify-between bg-navy px-4 py-3.5">
             <span className="text-sm font-semibold text-white">
               Ask Majeurs

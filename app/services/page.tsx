@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Services — Majeurs Ltd",
+  title: "Services",
+  description:
+    "Accounting, tax, payroll, audit, advisory and financial reporting services for businesses across Kenya.",
 };
 
 const services = [

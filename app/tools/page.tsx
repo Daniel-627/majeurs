@@ -4,7 +4,9 @@ import { tools } from "@/lib/data/tools";
 import VatCalculator from "@/components/tools/VatCalculator";
 
 export const metadata: Metadata = {
-  title: "Tools — Majeurs Ltd",
+  title: "Tools",
+  description:
+    "Free VAT, PAYE, profit margin, loan, break-even and expense calculators for Kenyan businesses.",
 };
 
 export default function ToolsPage() {

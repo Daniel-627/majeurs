@@ -89,12 +89,14 @@ export default function InboxPage() {
   }
 
   return (
-    <div className="flex h-screen bg-paper">
-      {/* Conversation list */}
-      <div className="w-80 flex-shrink-0 overflow-y-auto border-r border-line bg-white">
-        <div className="border-b border-line px-5 py-4">
-          <h1 className="font-serif text-lg">Inbox</h1>
-        </div>
+    <div className="flex h-full bg-paper">
+      {/* Conversation list — full width on mobile when nothing is selected,
+          hidden on mobile once a conversation is open (thread takes over) */}
+      <div
+        className={`w-full flex-shrink-0 overflow-y-auto border-r border-line bg-white sm:block sm:w-80 ${
+          activeId ? "hidden sm:block" : "block"
+        }`}
+      >
         {conversations.map((c) => (
           <button
             key={c.id}
@@ -131,14 +133,20 @@ export default function InboxPage() {
         )}
       </div>
 
-      {/* Thread */}
-      <div className="flex flex-1 flex-col">
+      {/* Thread — hidden on mobile until a conversation is selected */}
+      <div className={`flex-1 flex-col sm:flex ${activeId ? "flex" : "hidden"}`}>
         {!activeId ? (
           <div className="flex flex-1 items-center justify-center text-sm text-mute">
             Select a conversation
           </div>
         ) : (
           <>
+            <button
+              onClick={() => setActiveId(null)}
+              className="flex items-center gap-1.5 border-b border-line bg-white px-5 py-3 text-[13px] font-medium text-mute sm:hidden"
+            >
+              ← Back to conversations
+            </button>
             <div className="flex-1 space-y-2.5 overflow-y-auto p-6">
               {messages.map((m) => (
                 <div
