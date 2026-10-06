@@ -28,3 +28,39 @@ h2,
 h3 {
   @apply font-serif font-medium tracking-tight;
 }
+
+.prose-majeurs p {
+  margin-top: 1rem;
+  color: var(--color-mute);
+  line-height: 1.75;
+  font-size: 15.5px;
+}
+.prose-majeurs h2 {
+  margin-top: 2.25rem;
+  font-size: 22px;
+}
+.prose-majeurs h3 {
+  margin-top: 1.75rem;
+  font-size: 18px;
+}
+.prose-majeurs ul {
+  margin-top: 1rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+  color: var(--color-mute);
+}
+.prose-majeurs li {
+  margin-top: 0.4rem;
+}
+.prose-majeurs strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.prose-majeurs a {
+  color: var(--color-blue);
+  text-decoration: underline;
+}
+.prose-majeurs hr {
+  margin-top: 2.25rem;
+  border-color: var(--color-line);
+}

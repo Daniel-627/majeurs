@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getAllInsights } from "@/lib/mdx";
 
 export const metadata: Metadata = {
   title: "Resources",
@@ -7,16 +8,8 @@ export const metadata: Metadata = {
     "Practical guides on VAT, PAYE and tax compliance, plus a running calendar of Kenyan statutory deadlines.",
 };
 
-// Static for now — swap for a CMS/MDX source once content volume grows.
-const posts = [
-  { tag: "Tax", title: "Understanding VAT in Kenya", read: "6 min read" },
-  { tag: "Records", title: "How to keep proper business records", read: "5 min read" },
-  { tag: "Payroll", title: "PAYE explained", read: "4 min read" },
-  { tag: "Reporting", title: "What financial statements tell you", read: "7 min read" },
-  { tag: "Tax", title: "Common tax mistakes businesses make", read: "5 min read" },
-  { tag: "Audit", title: "How to prepare for an audit", read: "6 min read" },
-];
-
+// Tax calendar stays static for now — small, infrequently-updated data.
+// Worth moving to a Supabase table later if it needs editing without a deploy.
 const calendar = [
   { date: "Sep 20", name: "VAT Return", freq: "Monthly" },
   { date: "Sep 30", name: "PAYE Remittance", freq: "Monthly" },
@@ -26,6 +19,8 @@ const calendar = [
 ];
 
 export default function ResourcesPage() {
+  const posts = getAllInsights();
+
   return (
     <>
       <header className="mx-auto max-w-6xl px-8 pb-12 pt-20">
@@ -48,14 +43,17 @@ export default function ResourcesPage() {
         </div>
         <div className="border-t border-line">
           {posts.map((p) => (
-            <div
-              key={p.title}
-              className="grid items-baseline gap-2 border-b border-line py-6 sm:grid-cols-[140px_1fr_100px] sm:gap-7"
+            <Link
+              key={p.slug}
+              href={`/resources/insights/${p.slug}`}
+              className="grid items-baseline gap-2 border-b border-line py-6 transition-colors hover:bg-white sm:grid-cols-[140px_1fr_100px] sm:gap-7"
             >
               <div className="text-xs font-semibold text-blue">{p.tag}</div>
               <h3 className="text-[17px] font-semibold">{p.title}</h3>
-              <div className="text-[12.5px] text-mute sm:text-right">{p.read}</div>
-            </div>
+              <div className="text-[12.5px] text-mute sm:text-right">
+                {p.readTime}
+              </div>
+            </Link>
           ))}
         </div>
       </section>
