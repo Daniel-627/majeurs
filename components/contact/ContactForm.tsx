@@ -12,6 +12,9 @@ const needs = [
   "Not sure yet",
 ];
 
+const inputClass =
+  "w-full rounded-lg border border-line bg-paper px-3.5 py-2.5 text-sm outline-none focus:border-blue";
+
 export default function ContactForm() {
   const [form, setForm] = useState({
     name: "",
@@ -21,9 +24,10 @@ export default function ContactForm() {
     serviceInterest: needs[0],
     message: "",
   });
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
-    "idle"
-  );
+  // Honeypot — hidden from people, bots fill it in. See /api/leads.
+  const [trap, setTrap] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -32,16 +36,23 @@ export default function ContactForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("sending");
+    setErrorMsg("");
 
     try {
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, website: trap }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error ?? "Something went wrong — please try again.");
+      }
       setStatus("sent");
-    } catch {
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error ? err.message : "Something went wrong — please try again."
+      );
       setStatus("error");
     }
   }
@@ -61,24 +72,41 @@ export default function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl border border-line bg-white p-6 sm:p-9"
+      className="relative rounded-2xl border border-line bg-white p-6 sm:p-9"
     >
+      {/* Honeypot field — off-screen, skipped by keyboard and screen readers */}
+      <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+        <label>
+          Website
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            value={trap}
+            onChange={(e) => setTrap(e.target.value)}
+          />
+        </label>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Name">
           <input
             required
+            maxLength={100}
             value={form.name}
             onChange={(e) => update("name", e.target.value)}
             placeholder="Jane Wanjiru"
-            className="w-full rounded-lg border border-line bg-paper px-3.5 py-2.5 text-sm outline-none"
+            className={inputClass}
           />
         </Field>
         <Field label="Business / Organization">
           <input
+            maxLength={150}
             value={form.organization}
             onChange={(e) => update("organization", e.target.value)}
             placeholder="Optional"
-            className="w-full rounded-lg border border-line bg-paper px-3.5 py-2.5 text-sm outline-none"
+            className={inputClass}
           />
         </Field>
       </div>
@@ -87,19 +115,21 @@ export default function ContactForm() {
           <input
             required
             type="email"
+            maxLength={254}
             value={form.email}
             onChange={(e) => update("email", e.target.value)}
             placeholder="jane@example.com"
-            className="w-full rounded-lg border border-line bg-paper px-3.5 py-2.5 text-sm outline-none"
+            className={inputClass}
           />
         </Field>
         <Field label="Phone">
           <input
             type="tel"
+            maxLength={30}
             value={form.phone}
             onChange={(e) => update("phone", e.target.value)}
             placeholder="+254 7..."
-            className="w-full rounded-lg border border-line bg-paper px-3.5 py-2.5 text-sm outline-none"
+            className={inputClass}
           />
         </Field>
       </div>
@@ -108,7 +138,7 @@ export default function ContactForm() {
           <select
             value={form.serviceInterest}
             onChange={(e) => update("serviceInterest", e.target.value)}
-            className="w-full rounded-lg border border-line bg-paper px-3.5 py-2.5 text-sm outline-none"
+            className={inputClass}
           >
             {needs.map((n) => (
               <option key={n} value={n}>
@@ -121,18 +151,17 @@ export default function ContactForm() {
       <div className="mt-4">
         <Field label="Tell us a bit more">
           <textarea
+            maxLength={2000}
             value={form.message}
             onChange={(e) => update("message", e.target.value)}
             placeholder="A short description of your business and what you're looking for."
-            className="min-h-[100px] w-full rounded-lg border border-line bg-paper px-3.5 py-2.5 text-sm outline-none"
+            className={`${inputClass} min-h-[100px]`}
           />
         </Field>
       </div>
 
       {status === "error" && (
-        <p className="mt-3 text-sm text-red-600">
-          Something went wrong — please try again.
-        </p>
+        <p className="mt-3 text-sm text-red-600">{errorMsg}</p>
       )}
 
       <button

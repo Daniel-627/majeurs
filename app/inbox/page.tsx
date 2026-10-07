@@ -88,6 +88,8 @@ export default function InboxPage() {
       .eq("id", activeId);
   }
 
+  const active = conversations.find((c) => c.id === activeId);
+
   return (
     <div className="flex h-full bg-paper">
       {/* Conversation list — full width on mobile when nothing is selected,
@@ -124,6 +126,11 @@ export default function InboxPage() {
             <div className="mt-1 text-[11.5px] text-mute">
               {new Date(c.created_at).toLocaleString()}
             </div>
+            {(c.visitor_phone || c.visitor_email) && (
+              <div className="mt-0.5 truncate text-[11.5px] text-mute">
+                {c.visitor_phone || c.visitor_email}
+              </div>
+            )}
           </button>
         ))}
         {conversations.length === 0 && (
@@ -147,6 +154,26 @@ export default function InboxPage() {
             >
               ← Back to conversations
             </button>
+            {active && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-line bg-white px-5 py-3 text-[13px]">
+                <span className="font-semibold">
+                  {active.visitor_name || "Website visitor"}
+                </span>
+                {active.visitor_phone && (
+                  <a href={`tel:${active.visitor_phone}`} className="text-blue">
+                    {active.visitor_phone}
+                  </a>
+                )}
+                {active.visitor_email && (
+                  <a href={`mailto:${active.visitor_email}`} className="text-blue">
+                    {active.visitor_email}
+                  </a>
+                )}
+                {!active.visitor_phone && !active.visitor_email && (
+                  <span className="text-mute">No contact details left</span>
+                )}
+              </div>
+            )}
             <div className="flex-1 space-y-2.5 overflow-y-auto p-6">
               {messages.map((m) => (
                 <div

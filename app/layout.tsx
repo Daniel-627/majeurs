@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ChatWidget from "@/components/chat/ChatWidget";
+import { site } from "@/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,30 +18,48 @@ const fraunces = Fraunces({
   weight: ["400", "500", "600"],
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://majeurs.co.ke";
-const DESCRIPTION =
-  "Professional accounting, tax, and advisory services for businesses, startups, individuals and organizations across Kenya.";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: new URL(site.url),
   title: {
     default: "Majeurs Ltd — Clarity in Numbers. Confidence in Decisions.",
     template: "%s | Majeurs Ltd",
   },
-  description: DESCRIPTION,
+  description: site.description,
+  // "./" resolves to each page's own URL, so every page declares itself as
+  // the original — stops the .vercel.app address competing with your domain.
+  alternates: { canonical: "./" },
   openGraph: {
-    title: "Majeurs Ltd",
-    description: DESCRIPTION,
-    siteName: "Majeurs Ltd",
+    title: site.name,
+    description: site.description,
+    siteName: site.name,
     type: "website",
     images: ["/images/og-image.jpg"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Majeurs Ltd",
-    description: DESCRIPTION,
+    title: site.name,
+    description: site.description,
     images: ["/images/og-image.jpg"],
   },
+};
+
+// Tells Google who the business is. Values come from lib/site.ts —
+// update the placeholders there before launch.
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "AccountingService",
+  name: site.name,
+  url: site.url,
+  description: site.description,
+  telephone: site.phone,
+  email: site.email,
+  areaServed: { "@type": "Country", name: "Kenya" },
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: site.city,
+    addressCountry: site.country,
+  },
+  openingHours: site.hoursSchema,
 };
 
 export default function RootLayout({
@@ -51,6 +70,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
       <body className="bg-paper text-ink font-sans antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
         <Navbar />
         <main>{children}</main>
         <Footer />

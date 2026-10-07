@@ -1,10 +1,29 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { Message } from "@/types";
+import { site } from "@/lib/site";
 
 const STORAGE_KEY = "majeurs_conversation_id";
+const POLL_OPEN_MS = 4000; // panel open: look for replies every 4 seconds
+const POLL_CLOSED_MS = 20000; // panel closed: slower, just to catch replies
+
+// Merge server messages into what's on screen. Skips ones we already have,
+// and swaps an optimistic "temp" bubble for its real twin instead of
+// showing the same message twice.
+function mergeMessages(prev: Message[], incoming: Message[]): Message[] {
+  const next = [...prev];
+  for (const m of incoming) {
+    if (next.some((x) => x.id === m.id)) continue;
+    const twin = next.findIndex(
+      (x) =>
+        x.id.startsWith("temp-") && x.sender === m.sender && x.body === m.body
+    );
+    if (twin !== -1) next[twin] = m;
+    else next.push(m);
+  }
+  return next;
+}
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
@@ -14,10 +33,18 @@ export default function ChatWidget() {
   const [sending, setSending] = useState(false);
   const [newestId, setNewestId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const supabase = createClient();
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const [unread, setUnread] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [visitorName, setVisitorName] = useState("");
+  const [visitorContact, setVisitorContact] = useState("");
 
-  // On mount: resume a previous conversation from this browser, if one exists.
+  const bottomRef = useRef<HTMLDivElement>(null);
+  // Timestamp of the newest message the SERVER has told us about. Only
+  // advanced from server data (never from our optimistic bubbles), so a reply
+  // that lands between two polls can't be skipped.
+  const lastSeenRef = useRef<string | null>(null);
+
+  // On mount: resume a previous conversation from this browser, if any.
   useEffect(() => {
     let cancelled = false;
 
@@ -28,20 +55,28 @@ export default function ChatWidget() {
 
       const savedId = localStorage.getItem(STORAGE_KEY);
       if (savedId) {
-        const { data } = await supabase
-          .from("messages")
-          .select("*")
-          .eq("conversation_id", savedId)
-          .order("created_at", { ascending: true });
+        try {
+          const res = await fetch(
+            `/api/messages?conversationId=${encodeURIComponent(savedId)}`,
+            { cache: "no-store" }
+          );
+          if (cancelled) return;
 
-        if (cancelled) return;
-
-        if (data && data.length > 0) {
-          setConversationId(savedId);
-          setMessages(data);
-        } else {
-          // Conversation vanished or had no messages — start fresh next time.
-          localStorage.removeItem(STORAGE_KEY);
+          if (res.ok) {
+            const data: { messages: Message[] } = await res.json();
+            if (data.messages.length > 0) {
+              setConversationId(savedId);
+              setMessages(data.messages);
+              lastSeenRef.current =
+                data.messages[data.messages.length - 1].created_at;
+            } else {
+              localStorage.removeItem(STORAGE_KEY);
+            }
+          } else if (res.status === 400) {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        } catch {
+          // Offline — keep the saved id and try again next visit.
         }
       }
 
@@ -52,52 +87,67 @@ export default function ChatWidget() {
     return () => {
       cancelled = true;
     };
-  }, [supabase]);
+  }, []);
 
-  // Subscribe to realtime messages once we have a conversation.
-  // Visitor's own messages are added optimistically on send (below),
-  // so here we only react to staff/system messages coming back in —
-  // otherwise the visitor would see their own message twice.
+  // Look for staff / system replies. Open panel polls quickly, closed panel
+  // slowly; paused entirely while the tab is hidden.
   useEffect(() => {
     if (!conversationId) return;
+    const id: string = conversationId;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
-    const channel = supabase
-      .channel(`conversation:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          const incoming = payload.new as Message;
-          if (incoming.sender === "visitor") return;
-          setMessages((prev) => [...prev, incoming]);
-          setNewestId(incoming.id);
-          setTimeout(() => setNewestId(null), 900);
+    async function tick() {
+      if (!document.hidden) {
+        try {
+          const qs = new URLSearchParams({ conversationId: id });
+          if (lastSeenRef.current) qs.set("after", lastSeenRef.current);
+
+          const res = await fetch(`/api/messages?${qs}`, { cache: "no-store" });
+          if (res.ok && !cancelled) {
+            const data: { messages: Message[] } = await res.json();
+            if (data.messages.length > 0 && !cancelled) {
+              lastSeenRef.current =
+                data.messages[data.messages.length - 1].created_at;
+              setMessages((prev) => mergeMessages(prev, data.messages));
+
+              const fromTeam = data.messages.filter((m) => m.sender !== "visitor");
+              if (fromTeam.length > 0) {
+                setNewestId(fromTeam[fromTeam.length - 1].id);
+                setTimeout(() => setNewestId(null), 900);
+                if (!open) setUnread(true);
+              }
+            }
+          }
+        } catch {
+          // Network blip — we'll try again on the next tick.
         }
-      )
-      .subscribe();
+      }
+      if (!cancelled) {
+        timer = setTimeout(tick, open ? POLL_OPEN_MS : POLL_CLOSED_MS);
+      }
+    }
 
+    tick();
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (timer) clearTimeout(timer);
     };
-  }, [conversationId, supabase]);
+  }, [conversationId, open]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, open]);
 
   async function sendMessage() {
     const text = input.trim();
     if (!text || sending) return;
 
     setSending(true);
+    setNotice(null);
     const tempId = `temp-${Date.now()}`;
 
-    // Show it immediately — don't wait on the network or realtime.
+    // Show it immediately — don't wait on the network.
     setMessages((prev) => [
       ...prev,
       {
@@ -114,51 +164,74 @@ export default function ChatWidget() {
       const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId, body: text }),
+        body: JSON.stringify({
+          conversationId,
+          body: text,
+          visitorName,
+          visitorContact,
+        }),
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error ?? "Send failed");
 
-      if (!res.ok) throw new Error("Send failed");
-      const data = await res.json();
-      if (!conversationId) {
+      const real: Message = data.message;
+      // A different id than we sent means the server started a fresh chat
+      // (first message, or the old one no longer exists).
+      const isFresh = data.conversationId !== conversationId;
+      if (isFresh) {
         setConversationId(data.conversationId);
         localStorage.setItem(STORAGE_KEY, data.conversationId);
+        lastSeenRef.current = null;
       }
 
-      setNewestId(tempId);
+      setMessages((prev) => {
+        const base = isFresh && conversationId ? prev.filter((m) => m.id === tempId) : prev;
+        return base.some((m) => m.id === real.id)
+          ? base.filter((m) => m.id !== tempId)
+          : base.map((m) => (m.id === tempId ? real : m));
+      });
+
+      setNewestId(real.id);
       setTimeout(() => setNewestId(null), 900);
-    } catch {
-      // Mark the optimistic bubble as failed rather than losing it silently.
+    } catch (err) {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === tempId ? { ...m, body: `${m.body} (failed to send)` } : m
         )
       );
+      setNotice(err instanceof Error ? err.message : "Couldn't send — try again.");
     } finally {
       setSending(false);
     }
   }
 
-  // Don't render the floating button until we know whether to resume
-  // a conversation — avoids a flash of the empty-state intro.
+  // Don't render until we know whether to resume a conversation — avoids a
+  // flash of the empty-state intro.
   if (!loaded) return null;
+
+  const isNewChat = !conversationId && messages.length === 0;
 
   return (
     <>
       {!open && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setOpen(true);
+            setUnread(false);
+          }}
           className="fixed bottom-5 right-5 z-30 rounded-full bg-blue px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(18,104,232,0.55)]"
         >
           ✦ Ask Majeurs
+          {unread && (
+            <span className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-red-500" />
+          )}
         </button>
       )}
 
       {open && (
         <div className="fixed bottom-5 right-5 z-30 flex h-[min(480px,calc(100vh-7rem))] w-[min(340px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
           <div className="flex items-center justify-between bg-navy px-4 py-3.5">
-            <span className="text-sm font-semibold text-white">
-              Ask Majeurs
-            </span>
+            <span className="text-sm font-semibold text-white">Ask Majeurs</span>
             <button
               onClick={() => setOpen(false)}
               className="text-[#9FB4CC] hover:text-white"
@@ -169,11 +242,35 @@ export default function ChatWidget() {
           </div>
 
           <div className="flex-1 space-y-2 overflow-y-auto px-4 py-3">
-            {messages.length === 0 && (
-              <p className="text-[13.5px] text-mute">
-                Hi, I&apos;m from Majeurs — how can I help?
-              </p>
+            {isNewChat && (
+              <div>
+                <p className="text-[13.5px] text-mute">
+                  Hi, I&apos;m from Majeurs — how can I help?
+                </p>
+                <div className="mt-4 space-y-2">
+                  <input
+                    value={visitorName}
+                    onChange={(e) => setVisitorName(e.target.value)}
+                    placeholder="Your name (optional)"
+                    maxLength={100}
+                    autoComplete="name"
+                    className="w-full rounded-lg border border-line bg-paper px-3 py-2 text-[13px] outline-none focus:border-blue"
+                  />
+                  <input
+                    value={visitorContact}
+                    onChange={(e) => setVisitorContact(e.target.value)}
+                    placeholder="Phone or email (optional)"
+                    maxLength={120}
+                    autoComplete="email"
+                    className="w-full rounded-lg border border-line bg-paper px-3 py-2 text-[13px] outline-none focus:border-blue"
+                  />
+                  <p className="text-[11.5px] text-mute">
+                    So we can reach you if you leave this page.
+                  </p>
+                </div>
+              </div>
             )}
+
             {messages.map((m) => (
               <div
                 key={m.id}
@@ -192,7 +289,7 @@ export default function ChatWidget() {
                 {m.body}
                 {m.sender === "system" && (
                   <a
-                    href="tel:+254700123456"
+                    href={site.phoneHref}
                     className="mt-2 flex items-center justify-center gap-1.5 rounded-lg bg-navy py-2 text-[13px] font-semibold text-white"
                   >
                     📞 Call us
@@ -203,14 +300,19 @@ export default function ChatWidget() {
             <div ref={bottomRef} />
           </div>
 
+          {notice && (
+            <p className="px-4 pb-1 text-[12px] text-red-600">{notice}</p>
+          )}
+
           <div className="flex gap-2 border-t border-line p-3">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Type a message..."
+              maxLength={1000}
               disabled={sending}
-              className="flex-1 rounded-lg border border-line bg-paper px-3 py-2 text-[13.5px] outline-none disabled:opacity-60"
+              className="flex-1 rounded-lg border border-line bg-paper px-3 py-2 text-[13.5px] outline-none focus:border-blue disabled:opacity-60"
             />
             <button
               onClick={sendMessage}

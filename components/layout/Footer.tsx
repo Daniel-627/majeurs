@@ -1,4 +1,15 @@
 import Link from "next/link";
+import { site } from "@/lib/site";
+
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
+  { href: "/services", label: "Services" },
+  { href: "/industries", label: "Industries" },
+  { href: "/resources", label: "Resources" },
+  { href: "/tools", label: "Tools" },
+  { href: "/contact", label: "Contact" },
+];
 
 export default function Footer() {
   return (
@@ -25,11 +36,12 @@ export default function Footer() {
           <div className="mb-3.5 text-[13px] font-semibold text-white">
             Quick Links
           </div>
-          <div className="flex flex-col gap-2.5 text-[13.5px]">
-            <Link href="/">Home</Link>
-            <Link href="/about">About</Link>
-            <Link href="/services">Services</Link>
-            <Link href="/contact">Contact</Link>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 text-[13.5px]">
+            {links.map((l) => (
+              <Link key={l.href} href={l.href} className="hover:text-white">
+                {l.label}
+              </Link>
+            ))}
           </div>
         </div>
 
@@ -38,15 +50,15 @@ export default function Footer() {
             Contact
           </div>
           <div className="flex flex-col gap-2.5 text-[13.5px]">
-            <a href="tel:+254700123456">+254 700 123 456</a>
-            <a href="mailto:info@majeurs.co.ke">info@majeurs.co.ke</a>
-            <span>Nairobi, Kenya</span>
+            <a href={site.phoneHref} className="hover:text-white">{site.phone}</a>
+            <a href={`mailto:${site.email}`} className="hover:text-white">{site.email}</a>
+            <span>{site.city}, Kenya</span>
           </div>
         </div>
       </div>
 
       <div className="mx-auto mt-12 max-w-6xl border-t border-[#1B3350] px-8 pt-6 text-[12.5px] text-[#6C82A0]">
-        © {new Date().getFullYear()} Majeurs Ltd. All rights reserved.
+        © {new Date().getFullYear()} {site.name}. All rights reserved.
       </div>
     </footer>
   );

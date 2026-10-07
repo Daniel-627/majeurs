@@ -4,6 +4,7 @@ export interface Conversation {
   id: string;
   visitor_name: string | null;
   visitor_email: string | null;
+  visitor_phone: string | null;
   status: ConversationStatus;
   created_at: string;
   replied_at: string | null;

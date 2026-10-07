@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ContactForm from "@/components/contact/ContactForm";
+import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -11,9 +12,7 @@ export default function ContactPage() {
   return (
     <>
       <header className="mx-auto max-w-6xl px-8 pb-10 pt-20">
-        <div className="text-[13.5px] font-semibold text-blue">
-          Get in touch
-        </div>
+        <div className="text-[13.5px] font-semibold text-blue">Get in touch</div>
         <h1 className="mt-4 max-w-xl text-[30px] sm:text-[42px]">
           Let&apos;s talk about your finances.
         </h1>
@@ -27,19 +26,23 @@ export default function ContactPage() {
         <div className="flex flex-col gap-px overflow-hidden rounded-2xl border border-line bg-line">
           <div className="bg-navy p-6">
             <div className="text-xs font-semibold text-blue-light">Phone</div>
-            <div className="mt-1.5 text-white">+254 700 123 456</div>
+            <a href={site.phoneHref} className="mt-1.5 block text-white">
+              {site.phone}
+            </a>
           </div>
           <div className="bg-white p-6">
             <div className="text-xs font-semibold text-blue">Email</div>
-            <div className="mt-1.5">info@majeurs.co.ke</div>
+            <a href={`mailto:${site.email}`} className="mt-1.5 block">
+              {site.email}
+            </a>
           </div>
           <div className="bg-white p-6">
             <div className="text-xs font-semibold text-blue">Office</div>
-            <div className="mt-1.5">Nairobi, Kenya</div>
+            <div className="mt-1.5">{site.city}, Kenya</div>
           </div>
           <div className="bg-white p-6">
             <div className="text-xs font-semibold text-blue">Hours</div>
-            <div className="mt-1.5">Mon–Fri, 8:00 AM – 5:00 PM</div>
+            <div className="mt-1.5">{site.hours}</div>
           </div>
         </div>
 
