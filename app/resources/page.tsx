@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllInsights } from "@/lib/mdx";
+import {
+  getUpcomingDeadlines,
+  CALENDAR_LAST_REVIEWED,
+} from "@/lib/data/tax-calendar";
+
+// Regenerate at most hourly so "next due" dates roll forward on their own
+// instead of freezing at whatever day the site was last built.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Resources",
@@ -8,18 +16,9 @@ export const metadata: Metadata = {
     "Practical guides on VAT, PAYE and tax compliance, plus a running calendar of Kenyan statutory deadlines.",
 };
 
-// Tax calendar stays static for now — small, infrequently-updated data.
-// Worth moving to a Supabase table later if it needs editing without a deploy.
-const calendar = [
-  { date: "Sep 20", name: "VAT Return", freq: "Monthly" },
-  { date: "Sep 30", name: "PAYE Remittance", freq: "Monthly" },
-  { date: "Oct 09", name: "Withholding Tax", freq: "Monthly" },
-  { date: "Oct 20", name: "VAT Return", freq: "Monthly" },
-  { date: "Dec 31", name: "Annual Income Tax Return", freq: "Annual" },
-];
-
 export default function ResourcesPage() {
   const posts = getAllInsights();
+  const calendar = getUpcomingDeadlines();
 
   return (
     <>
@@ -68,19 +67,29 @@ export default function ResourcesPage() {
         <div className="overflow-hidden rounded-2xl border border-line bg-white">
           {calendar.map((c, i) => (
             <div
-              key={`${c.date}-${c.name}`}
-              className={`grid items-center gap-5 px-7 py-5 sm:grid-cols-[120px_1fr_90px] ${
+              key={c.name}
+              className={`grid items-center gap-2 px-7 py-5 sm:grid-cols-[130px_1fr_90px] sm:gap-5 ${
                 i !== calendar.length - 1 ? "border-b border-line" : ""
               }`}
             >
-              <div className="font-serif text-lg">{c.date}</div>
-              <div className="text-[14.5px] font-medium">{c.name}</div>
+              <div className="font-serif text-lg">{c.label}</div>
+              <div>
+                <div className="text-[14.5px] font-medium">{c.name}</div>
+                {c.note && (
+                  <div className="mt-0.5 text-[12.5px] text-mute">{c.note}</div>
+                )}
+              </div>
               <div className="w-fit rounded-full bg-blue/10 px-2.5 py-1 text-[11.5px] font-semibold text-blue">
                 {c.freq}
               </div>
             </div>
           ))}
         </div>
+        <p className="mt-4 text-[12.5px] text-mute">
+          Based on KRA guidance and the Finance Act 2026 · Last reviewed{" "}
+          {CALENDAR_LAST_REVIEWED}. Always confirm the exact date on iTax —
+          deadlines can shift when they fall on a weekend or public holiday.
+        </p>
       </section>
 
       <section className="mx-auto max-w-6xl px-8 pb-24">
