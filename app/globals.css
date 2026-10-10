@@ -71,15 +71,50 @@ h3 {
 @keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
+/* Opacity only — the elements inside add their own rise, so the page itself
+   just cross-fades and the two motions don't stack up. */
 .page-transition {
-  animation: page-in 0.35s ease-out backwards;
+  animation: page-in 0.25s ease-out backwards;
+}
+
+/* Hero entrance. Pure CSS on purpose: it runs the moment the page paints,
+   without waiting for JavaScript to download — important on slow mobile
+   data, where a JS-driven hero would sit blank for seconds. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rise-1 { animation-delay: 0.05s; }
+.rise-2 { animation-delay: 0.15s; }
+.rise-3 { animation-delay: 0.25s; }
+.rise-4 { animation-delay: 0.35s; }
+.rise-5 { animation-delay: 0.45s; }
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.bar-grow {
+  transform-origin: bottom;
+  animation: bar-grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Visible keyboard focus on everything interactive. This rule is unlayered,
@@ -90,7 +125,9 @@ h3 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-transition {
+  .page-transition,
+  .rise,
+  .bar-grow {
     animation: none;
   }
 }

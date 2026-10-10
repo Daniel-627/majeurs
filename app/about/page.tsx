@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AvatarImage from "@/components/ui/AvatarImage";
+import { RevealSection, Stagger, Item } from "@/components/motion/primitives";
 
 export const metadata: Metadata = {
   title: "About",
@@ -34,12 +35,12 @@ const team = [
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <section className="border-t border-line">
+    <RevealSection className="border-t border-line">
       <div className="mx-auto grid max-w-6xl gap-6 px-8 py-11 sm:grid-cols-[220px_1fr] sm:gap-14">
         <div className="pt-1 text-[13px] font-semibold text-blue">{label}</div>
         <div>{children}</div>
       </div>
-    </section>
+    </RevealSection>
   );
 }
 
@@ -47,11 +48,11 @@ export default function AboutPage() {
   return (
     <>
       <header className="mx-auto max-w-6xl px-8 pb-10 pt-20">
-        <div className="text-[13.5px] font-semibold text-blue">About Majeurs</div>
-        <h1 className="mt-4 max-w-xl text-[32px] sm:text-[46px]">
+        <div className="rise rise-1 text-[13.5px] font-semibold text-blue">About Majeurs</div>
+        <h1 className="rise rise-2 mt-4 max-w-xl text-[32px] sm:text-[46px]">
           More than accounting. A partner in your financial journey.
         </h1>
-        <p className="mt-5 max-w-xl text-lg text-mute">
+        <p className="rise rise-3 mt-5 max-w-xl text-lg text-mute">
           We started Majeurs because too many businesses were making
           decisions on gut feeling — not because they wanted to, but because
           their numbers weren&apos;t telling them anything useful.
@@ -88,36 +89,36 @@ export default function AboutPage() {
 
       <Row label="Our values">
         <h2 className="text-[26px]">What guides how we work</h2>
-        <div className="mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        <Stagger className="mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           {values.map(([t, d]) => (
-            <div key={t} className="bg-white p-6">
+            <Item key={t} className="bg-white p-6">
               <div className="text-[15px] font-semibold">{t}</div>
               <div className="mt-2 text-[13.5px] text-mute">{d}</div>
-            </div>
+            </Item>
           ))}
-        </div>
+        </Stagger>
       </Row>
 
       <Row label="Our history">
         <h2 className="text-[26px]">Five years of steady growth</h2>
-        <div className="mt-5">
+        <Stagger className="mt-5">
           {timeline.map(([year, desc]) => (
-            <div
+            <Item
               key={year}
               className="grid grid-cols-[80px_1fr] gap-6 border-t border-line py-5 first:border-t-0"
             >
               <div className="font-serif text-[19px]">{year}</div>
               <p className="text-[14.5px] text-mute">{desc}</p>
-            </div>
+            </Item>
           ))}
-        </div>
+        </Stagger>
       </Row>
 
       <Row label="Team">
         <h2 className="text-[26px]">The people behind the numbers</h2>
-        <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <Stagger className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-3">
           {team.map((m) => (
-            <div key={m.name} className="rounded-2xl border border-line bg-white p-6">
+            <Item key={m.name} className="rounded-2xl border border-line bg-white p-6">
               <AvatarImage
                 src={`/images/team/${m.slug}.jpg`}
                 alt={m.name}
@@ -127,12 +128,12 @@ export default function AboutPage() {
               <div className="mt-4 text-[15.5px] font-semibold">{m.name}</div>
               <div className="mt-0.5 text-[13px] text-blue">{m.role}</div>
               <p className="mt-3 text-[13.5px] text-mute">{m.bio}</p>
-            </div>
+            </Item>
           ))}
-        </div>
+        </Stagger>
       </Row>
 
-      <section className="mx-auto max-w-6xl px-8 py-20">
+      <RevealSection className="mx-auto max-w-6xl px-8 py-20">
         <div className="flex flex-wrap items-center justify-between gap-8 rounded-2xl bg-navy p-11 sm:p-14">
           <div>
             <h2 className="max-w-xs text-[26px] text-white sm:text-[32px]">
@@ -150,7 +151,7 @@ export default function AboutPage() {
             Talk to an advisor
           </a>
         </div>
-      </section>
+      </RevealSection>
     </>
   );
 }

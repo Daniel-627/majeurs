@@ -53,16 +53,16 @@ export default async function InsightPage({
           __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c"),
         }}
       />
-      <Link href="/resources" className="text-[13px] font-semibold text-blue">
+      <Link href="/resources" className="rise rise-1 text-[13px] font-semibold text-blue">
         ← Resources
       </Link>
-      <div className="mt-6 text-xs font-semibold text-blue">
+      <div className="rise rise-2 mt-6 text-xs font-semibold text-blue">
         {frontmatter.tag}
       </div>
-      <h1 className="mt-3 text-[30px] sm:text-[38px]">{frontmatter.title}</h1>
-      <div className="mt-3 text-[13px] text-mute">{frontmatter.readTime}</div>
+      <h1 className="rise rise-3 mt-3 text-[30px] sm:text-[38px]">{frontmatter.title}</h1>
+      <div className="rise rise-4 mt-3 text-[13px] text-mute">{frontmatter.readTime}</div>
 
-      <div className="prose-majeurs mt-10">
+      <div className="rise rise-5 prose-majeurs mt-10">
         <MDXRemote source={content} />
       </div>
     </article>

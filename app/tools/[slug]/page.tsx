@@ -7,6 +7,7 @@ import ProfitMarginCalculator from "@/components/tools/ProfitMarginCalculator";
 import LoanCalculator from "@/components/tools/LoanCalculator";
 import BreakEvenCalculator from "@/components/tools/BreakEvenCalculator";
 import ExpenseCalculator from "@/components/tools/ExpenseCalculator";
+import { Reveal } from "@/components/motion/primitives";
 
 const components: Record<string, React.ComponentType> = {
   "vat-calculator": VatCalculator,
@@ -45,16 +46,18 @@ export default async function ToolDetailPage({
   return (
     <>
       <header className="mx-auto max-w-6xl px-8 pb-10 pt-20">
-        <div className="text-[13.5px] font-semibold text-blue">
+        <div className="rise rise-1 text-[13.5px] font-semibold text-blue">
           Tools / {tool.title}
         </div>
-        <h1 className="mt-4 max-w-xl text-[32px] sm:text-[40px]">
+        <h1 className="rise rise-2 mt-4 max-w-xl text-[32px] sm:text-[40px]">
           {tool.desc}
         </h1>
       </header>
 
       <section className="mx-auto max-w-xl px-8 pb-24">
-        <Calculator />
+        <Reveal delay={0.1}>
+          <Calculator />
+        </Reveal>
       </section>
     </>
   );

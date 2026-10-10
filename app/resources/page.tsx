@@ -5,6 +5,7 @@ import {
   getUpcomingDeadlines,
   CALENDAR_LAST_REVIEWED,
 } from "@/lib/data/tax-calendar";
+import { Reveal, Stagger, ItemLink, Item } from "@/components/motion/primitives";
 
 // Regenerate at most hourly so "next due" dates roll forward on their own
 // instead of freezing at whatever day the site was last built.
@@ -23,26 +24,26 @@ export default function ResourcesPage() {
   return (
     <>
       <header className="mx-auto max-w-6xl px-8 pb-12 pt-20">
-        <div className="text-[13.5px] font-semibold text-blue">Resources</div>
-        <h1 className="mt-4 max-w-xl text-[36px] sm:text-[46px]">
+        <div className="rise rise-1 text-[13.5px] font-semibold text-blue">Resources</div>
+        <h1 className="rise rise-2 mt-4 max-w-xl text-[36px] sm:text-[46px]">
           Straight answers to the questions we hear most.
         </h1>
-        <p className="mt-5 max-w-xl text-lg text-mute">
+        <p className="rise rise-3 mt-5 max-w-xl text-lg text-mute">
           Practical guidance on tax, records and compliance in Kenya — plus a
           running calendar of the deadlines that actually matter.
         </p>
       </header>
 
       <section className="mx-auto max-w-6xl px-8 pb-20">
-        <div className="grid items-end gap-10 pb-10 sm:grid-cols-2">
+        <Reveal className="grid items-end gap-10 pb-10 sm:grid-cols-2">
           <h2 className="text-[28px] sm:text-[32px]">Majeurs Insights</h2>
           <p className="max-w-md text-[15px] text-mute">
             Short, practical reads — no jargon, no filler.
           </p>
-        </div>
-        <div className="border-t border-line">
+        </Reveal>
+        <Stagger className="border-t border-line">
           {posts.map((p) => (
-            <Link
+            <ItemLink
               key={p.slug}
               href={`/resources/insights/${p.slug}`}
               className="grid items-baseline gap-2 border-b border-line py-6 transition-colors hover:bg-white sm:grid-cols-[140px_1fr_100px] sm:gap-7"
@@ -52,21 +53,21 @@ export default function ResourcesPage() {
               <div className="text-[12.5px] text-mute sm:text-right">
                 {p.readTime}
               </div>
-            </Link>
+            </ItemLink>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       <section className="mx-auto max-w-6xl px-8 pb-24">
-        <div className="grid items-end gap-10 pb-10 sm:grid-cols-2">
+        <Reveal className="grid items-end gap-10 pb-10 sm:grid-cols-2">
           <h2 className="text-[28px] sm:text-[32px]">Tax Calendar</h2>
           <p className="max-w-md text-[15px] text-mute">
             Key statutory deadlines, kept up to date so you never miss one.
           </p>
-        </div>
-        <div className="overflow-hidden rounded-2xl border border-line bg-white">
+        </Reveal>
+        <Stagger className="overflow-hidden rounded-2xl border border-line bg-white">
           {calendar.map((c, i) => (
-            <div
+            <Item
               key={c.name}
               className={`grid items-center gap-2 px-7 py-5 sm:grid-cols-[130px_1fr_90px] sm:gap-5 ${
                 i !== calendar.length - 1 ? "border-b border-line" : ""
@@ -82,9 +83,9 @@ export default function ResourcesPage() {
               <div className="w-fit rounded-full bg-blue/10 px-2.5 py-1 text-[11.5px] font-semibold text-blue">
                 {c.freq}
               </div>
-            </div>
+            </Item>
           ))}
-        </div>
+        </Stagger>
         <p className="mt-4 text-[12.5px] text-mute">
           Based on KRA guidance and the Finance Act 2026 · Last reviewed{" "}
           {CALENDAR_LAST_REVIEWED}. Always confirm the exact date on iTax —
@@ -93,7 +94,7 @@ export default function ResourcesPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-8 pb-24">
-        <div className="flex flex-wrap items-center justify-between gap-8 rounded-2xl bg-navy p-11 sm:p-14">
+        <Reveal className="flex flex-wrap items-center justify-between gap-8 rounded-2xl bg-navy p-11 sm:p-14">
           <div>
             <h2 className="max-w-xs text-[26px] text-white sm:text-[30px]">
               Never miss a deadline again
@@ -109,7 +110,7 @@ export default function ResourcesPage() {
           >
             Talk to an advisor
           </Link>
-        </div>
+        </Reveal>
       </section>
     </>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Reveal, Stagger, Item } from "@/components/motion/primitives";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -63,11 +64,11 @@ export default function ServicesPage() {
   return (
     <>
       <header className="mx-auto max-w-6xl px-8 pb-10 pt-20">
-        <div className="text-[13.5px] font-semibold text-blue">What we do</div>
-        <h1 className="mt-4 max-w-xl text-[36px] sm:text-[46px]">
+        <div className="rise rise-1 text-[13.5px] font-semibold text-blue">What we do</div>
+        <h1 className="rise rise-2 mt-4 max-w-xl text-[36px] sm:text-[46px]">
           Six services. One clear picture of your business.
         </h1>
-        <p className="mt-5 max-w-xl text-lg text-mute">
+        <p className="rise rise-3 mt-5 max-w-xl text-lg text-mute">
           Each service runs as its own practice, with its own process — but
           they all feed the same goal: numbers you can trust and act on.
         </p>
@@ -75,7 +76,7 @@ export default function ServicesPage() {
 
       <section className="mx-auto max-w-6xl border-t border-line px-8">
         {services.map((s) => (
-          <div
+          <Reveal
             key={s.n}
             className="grid gap-6 border-b border-line py-11 sm:grid-cols-[120px_1fr_1fr] sm:gap-10"
           >
@@ -101,31 +102,31 @@ export default function ServicesPage() {
                 Learn more →
               </Link>
             </div>
-          </div>
+          </Reveal>
         ))}
       </section>
 
       <section className="mx-auto max-w-6xl px-8 py-24">
-        <div className="grid items-end gap-10 pb-13 sm:grid-cols-2">
+        <Reveal className="grid items-end gap-10 pb-13 sm:grid-cols-2">
           <h2 className="text-[32px] sm:text-[34px]">How we work with you</h2>
           <p className="max-w-md text-[15px] text-mute">
             The same process underlies every service — only the details
             change.
           </p>
-        </div>
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        </Reveal>
+        <Stagger className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           {steps.map(([n, t, d]) => (
-            <div key={n} className="bg-white p-7">
+            <Item key={n} className="bg-white p-7">
               <div className="text-[13px] font-semibold text-blue">{n}</div>
               <div className="mt-3.5 text-[15px] font-semibold">{t}</div>
               <div className="mt-2 text-[13.5px] text-mute">{d}</div>
-            </div>
+            </Item>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       <section className="mx-auto max-w-6xl px-8 pb-24">
-        <div className="flex flex-wrap items-center justify-between gap-8 rounded-2xl bg-navy p-11 sm:p-14">
+        <Reveal className="flex flex-wrap items-center justify-between gap-8 rounded-2xl bg-navy p-11 sm:p-14">
           <div>
             <h2 className="max-w-xs text-[26px] text-white sm:text-[32px]">
               Not sure which service fits?
@@ -141,7 +142,7 @@ export default function ServicesPage() {
           >
             Talk to an advisor
           </Link>
-        </div>
+        </Reveal>
       </section>
     </>
   );

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Reveal, Stagger, ItemLink, Item } from "@/components/motion/primitives";
 
 const services = [
   { n: "01", title: "Accounting & Bookkeeping", desc: "Accurate records, reconciled monthly, so your numbers are never a surprise.", href: "/services/accounting" },
@@ -23,19 +24,19 @@ export default function HomePage() {
       <header className="mx-auto max-w-6xl px-8 pb-24 pt-20">
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <div className="text-[13.5px] font-semibold text-blue">
+            <div className="rise rise-1 text-[13.5px] font-semibold text-blue">
               Accounting · Tax · Advisory
             </div>
-            <h1 className="mt-4 text-[44px] leading-[1.08] sm:text-[56px]">
+            <h1 className="rise rise-2 mt-4 text-[44px] leading-[1.08] sm:text-[56px]">
               Clarity in numbers.
               <br />
               Confidence in decisions.
             </h1>
-            <p className="mt-5 max-w-md text-lg text-mute">
+            <p className="rise rise-3 mt-5 max-w-md text-lg text-mute">
               We handle the books, the compliance, and the reporting — so you
               can run your business on facts, not guesswork.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3.5">
+            <div className="rise rise-4 mt-8 flex flex-wrap gap-3.5">
               <Link
                 href="/contact"
                 className="rounded-lg bg-navy px-6 py-3.5 text-sm font-semibold text-white"
@@ -51,12 +52,12 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative min-h-[340px] overflow-hidden rounded-[20px] bg-navy p-9">
+          <div className="rise rise-3 relative min-h-[340px] overflow-hidden rounded-[20px] bg-navy p-9">
             <div className="absolute right-7 top-8 flex h-[140px] items-end gap-2">
-              <div className="w-4 rounded-t bg-gradient-to-t from-blue to-blue-light" style={{ height: "40%" }} />
-              <div className="w-4 rounded-t bg-gradient-to-t from-blue to-blue-light" style={{ height: "58%" }} />
-              <div className="w-4 rounded-t bg-gradient-to-t from-blue to-blue-light" style={{ height: "74%" }} />
-              <div className="w-4 rounded-t bg-gradient-to-t from-blue to-blue-light" style={{ height: "100%" }} />
+              <div className="bar-grow w-4 rounded-t bg-gradient-to-t from-blue to-blue-light" style={{ height: "40%", animationDelay: "0.55s" }} />
+              <div className="bar-grow w-4 rounded-t bg-gradient-to-t from-blue to-blue-light" style={{ height: "58%", animationDelay: "0.65s" }} />
+              <div className="bar-grow w-4 rounded-t bg-gradient-to-t from-blue to-blue-light" style={{ height: "74%", animationDelay: "0.75s" }} />
+              <div className="bar-grow w-4 rounded-t bg-gradient-to-t from-blue to-blue-light" style={{ height: "100%", animationDelay: "0.85s" }} />
             </div>
             <div className="absolute bottom-9 left-9 right-9 text-white">
               <div className="font-serif text-4xl">5+ yrs</div>
@@ -80,7 +81,7 @@ export default function HomePage() {
 
       {/* Services */}
       <section className="mx-auto max-w-6xl px-8 py-24">
-        <div className="grid items-end gap-10 pb-14 sm:grid-cols-2">
+        <Reveal className="grid items-end gap-10 pb-14 sm:grid-cols-2">
           <h2 className="text-[32px] sm:text-[38px]">
             Comprehensive financial solutions, built around how your business
             actually runs.
@@ -89,10 +90,10 @@ export default function HomePage() {
             From day-to-day bookkeeping to the advisory work that shapes real
             decisions — each service stands on its own.
           </p>
-        </div>
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+        </Reveal>
+        <Stagger className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
-            <Link
+            <ItemLink
               key={s.n}
               href={s.href}
               className="flex min-h-[190px] flex-col justify-between bg-white p-7 hover:bg-paper"
@@ -102,14 +103,14 @@ export default function HomePage() {
                 <h3 className="mt-4 font-sans text-[19px] font-semibold">{s.title}</h3>
                 <p className="mt-2 text-sm text-mute">{s.desc}</p>
               </div>
-            </Link>
+            </ItemLink>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       {/* Why Majeurs */}
       <section className="mx-auto max-w-6xl px-8 pb-24">
-        <div className="rounded-[22px] bg-navy p-11 sm:p-16">
+        <Reveal className="rounded-[22px] bg-navy p-11 sm:p-16">
           <h2 className="max-w-xs text-[28px] text-white sm:text-[34px]">
             More than numbers. A trusted partner.
           </h2>
@@ -126,34 +127,34 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Industries */}
       <section className="mx-auto max-w-6xl px-8 pb-24">
-        <div className="grid items-end gap-10 pb-10 sm:grid-cols-2">
+        <Reveal className="grid items-end gap-10 pb-10 sm:grid-cols-2">
           <h2 className="text-[32px] sm:text-[38px]">Who we serve</h2>
           <p className="max-w-md text-[15px] text-mute">
             From first-time founders to established firms, our approach
             adapts to where the business actually is.
           </p>
-        </div>
-        <div className="flex flex-col border-t border-line">
+        </Reveal>
+        <Stagger className="flex flex-col border-t border-line">
           {industries.map((i) => (
-            <div
+            <Item
               key={i.name}
               className="grid gap-1.5 border-b border-line py-6 sm:grid-cols-[200px_1fr] sm:items-baseline sm:gap-6"
             >
               <div className="font-serif text-xl">{i.name}</div>
               <p className="max-w-xl text-[14.5px] text-mute">{i.desc}</p>
-            </div>
+            </Item>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       {/* CTA band */}
       <section className="mx-auto max-w-6xl px-8 pb-24">
-        <div className="flex flex-wrap items-center justify-between gap-8 rounded-2xl border border-line bg-paper p-11 sm:p-14">
+        <Reveal className="flex flex-wrap items-center justify-between gap-8 rounded-2xl border border-line bg-paper p-11 sm:p-14">
           <h2 className="max-w-xs text-[26px] sm:text-[32px]">
             Let&apos;s put your finances in order.
           </h2>
@@ -163,7 +164,7 @@ export default function HomePage() {
           >
             Talk to an advisor
           </Link>
-        </div>
+        </Reveal>
       </section>
     </>
   );

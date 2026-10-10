@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ChatWidget from "@/components/chat/ChatWidget";
+import MotionProvider from "@/components/motion/MotionProvider";
 import { site } from "@/lib/site";
 
 const inter = Inter({
@@ -76,10 +77,16 @@ export default function RootLayout({
             __html: JSON.stringify(organizationJsonLd).replace(/</g, "\\u003c"),
           }}
         />
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-        <ChatWidget />
+        {/* If JavaScript is off, make sure scroll-reveal content isn't left hidden */}
+        <noscript>
+          <style>{`[style*="opacity:0"]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
+        <MotionProvider>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+          <ChatWidget />
+        </MotionProvider>
       </body>
     </html>
   );

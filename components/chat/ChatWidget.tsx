@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
 import type { Message } from "@/types";
 import { site } from "@/lib/site";
 
@@ -213,8 +215,16 @@ export default function ChatWidget() {
 
   return (
     <>
+      <AnimatePresence>
       {!open && (
-        <button
+        <m.button
+          key="launcher"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.96 }}
+          transition={{ duration: 0.2 }}
           onClick={() => {
             setOpen(true);
             setUnread(false);
@@ -225,11 +235,18 @@ export default function ChatWidget() {
           {unread && (
             <span className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-red-500" />
           )}
-        </button>
+        </m.button>
       )}
 
       {open && (
-        <div className="fixed bottom-5 right-5 z-30 flex h-[min(480px,calc(100vh-7rem))] w-[min(340px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
+        <m.div
+          key="panel"
+          initial={{ opacity: 0, y: 16, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 16, scale: 0.96 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          style={{ transformOrigin: "bottom right" }}
+          className="fixed bottom-5 right-5 z-30 flex h-[min(480px,calc(100vh-7rem))] w-[min(340px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
           <div className="flex items-center justify-between bg-navy px-4 py-3.5">
             <span className="text-sm font-semibold text-white">Ask Majeurs</span>
             <button
@@ -271,23 +288,26 @@ export default function ChatWidget() {
               </div>
             )}
 
-            {messages.map((m) => (
-              <div
-                key={m.id}
+            {messages.map((msg) => (
+              <m.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className={`max-w-[85%] rounded-xl px-3 py-2 text-[13.5px] transition-shadow duration-700 ${
-                  m.sender === "visitor"
+                  msg.sender === "visitor"
                     ? "ml-auto bg-blue text-white"
-                    : m.sender === "system"
+                    : msg.sender === "system"
                     ? "bg-paper text-mute"
                     : "bg-paper text-ink"
                 } ${
-                  m.id === newestId
+                  msg.id === newestId
                     ? "shadow-[0_0_0_4px_rgba(60,140,255,0.35)]"
                     : "shadow-none"
                 }`}
               >
-                {m.body}
-                {m.sender === "system" && (
+                {msg.body}
+                {msg.sender === "system" && (
                   <a
                     href={site.phoneHref}
                     className="mt-2 flex items-center justify-center gap-1.5 rounded-lg bg-navy py-2 text-[13px] font-semibold text-white"
@@ -295,7 +315,7 @@ export default function ChatWidget() {
                     📞 Call us
                   </a>
                 )}
-              </div>
+              </m.div>
             ))}
             <div ref={bottomRef} />
           </div>
@@ -322,8 +342,9 @@ export default function ChatWidget() {
               {sending ? "…" : "Send"}
             </button>
           </div>
-        </div>
+        </m.div>
       )}
+      </AnimatePresence>
     </>
   );
 }

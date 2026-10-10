@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
 
 const links = [
   { href: "/about", label: "About" },
@@ -54,13 +56,15 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative pb-1 ${active ? "text-ink" : "text-mute hover:text-ink"}`}
+                className={`group relative pb-1 transition-colors ${active ? "text-ink" : "text-mute hover:text-ink"}`}
                 aria-current={active ? "page" : undefined}
               >
                 {link.label}
-                {active && (
-                  <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] rounded-full bg-blue" />
-                )}
+                <span
+                  className={`absolute -bottom-[1px] left-0 right-0 h-[2px] origin-left rounded-full bg-blue transition-transform duration-300 ${
+                    active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-50"
+                  }`}
+                />
               </Link>
             );
           })}
@@ -95,33 +99,42 @@ export default function Navbar() {
       </div>
 
       {/* Mobile dropdown panel */}
-      {open && (
-        <div className="border-t border-line bg-white px-6 py-4 md:hidden">
-          <div className="flex flex-col gap-1">
-            {links.map((link) => {
-              const active = isActive(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`rounded-lg px-3.5 py-2.5 text-[15px] font-medium ${
-                    active ? "bg-paper text-ink" : "text-mute"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-            <Link
-              href="/contact"
-              className="mt-2 rounded-lg bg-navy px-3.5 py-3 text-center text-[15px] font-semibold text-white"
-            >
-              Book Consultation
-            </Link>
-          </div>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <m.div
+            key="mobile-menu"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="overflow-hidden border-t border-line bg-white md:hidden"
+          >
+            <div className="flex flex-col gap-1 px-6 py-4">
+              {links.map((link) => {
+                const active = isActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`rounded-lg px-3.5 py-2.5 text-[15px] font-medium ${
+                      active ? "bg-paper text-ink" : "text-mute"
+                    }`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+              <Link
+                href="/contact"
+                className="mt-2 rounded-lg bg-navy px-3.5 py-3 text-center text-[15px] font-semibold text-white"
+              >
+                Book Consultation
+              </Link>
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
