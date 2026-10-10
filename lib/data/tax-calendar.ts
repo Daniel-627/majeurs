@@ -2,7 +2,10 @@
 // computed from today and never goes stale.
 //
 // When the law changes, edit the rules below and update CALENDAR_LAST_REVIEWED.
-// Sources: KRA notices / iTax guidance, Finance Act 2026 (checked Oct 2026).
+// Sources: KRA's own pages (PAYE 9th; VAT, withholding and turnover tax 20th)
+// and KRA's Sept 2026 notices on the Finance Act 2026 filing-date changes.
+// Where reports disagreed on annual returns, the EARLIEST plausible date is
+// shown — filing early is harmless, filing late costs a penalty.
 
 export const CALENDAR_LAST_REVIEWED = "October 2026";
 
@@ -21,17 +24,25 @@ export const deadlineRules: DeadlineRule[] = [
   { name: "Withholding tax", freq: "Monthly", day: 20 },
   { name: "Turnover tax", freq: "Monthly", day: 20 },
   {
-    name: "Individual return — employees taxed only through PAYE",
+    name: "Nil income tax return",
+    freq: "Annual",
+    month: 1,
+    day: 31,
+    note: "New from 2027 under Finance Act 2026 (previously June 30).",
+  },
+  {
+    name: "Individual income tax return",
     freq: "Annual",
     month: 4,
     day: 30,
-    note: "New under Finance Act 2026; first applies to 2026 income, filed in 2027.",
+    note: "New from 2027 under Finance Act 2026 (previously June 30). Some income types may differ — confirm yours with us.",
   },
   {
-    name: "Individual return — business, rental or professional income",
+    name: "Company income tax return",
     freq: "Annual",
     month: 6,
     day: 30,
+    note: "Due six months after your financial year-end — June 30 for December year-ends.",
   },
   {
     name: "Tax amnesty — clear outstanding principal tax",

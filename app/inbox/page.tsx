@@ -1,8 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Conversation, Message } from "@/types";
+
+// "Waiting on us" = the visitor (or the automatic call-fallback) spoke last.
+function needsReply(c: Conversation) {
+  return c.last_sender !== null && c.last_sender !== "staff";
+}
+
+function formatWhen(iso: string) {
+  return new Date(iso).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function InboxPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -10,14 +24,15 @@ export default function InboxPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [reply, setReply] = useState("");
   const supabase = createClient();
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Load conversation list, newest first
+  // Conversation list — most recent activity first, kept live.
   useEffect(() => {
     async function load() {
       const { data } = await supabase
         .from("conversations")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("last_message_at", { ascending: false });
       if (data) setConversations(data);
     }
     load();
@@ -36,7 +51,13 @@ export default function InboxPage() {
     };
   }, [supabase]);
 
-  // Load + subscribe to the active conversation's messages
+  // Show how many are waiting in the browser tab, so you notice from another tab.
+  const waiting = conversations.filter(needsReply).length;
+  useEffect(() => {
+    document.title = `${waiting > 0 ? `(${waiting}) ` : ""}Inbox | Majeurs Ltd`;
+  }, [waiting]);
+
+  // Messages for the open conversation, kept live.
   useEffect(() => {
     if (!activeId) return;
 
@@ -71,6 +92,11 @@ export default function InboxPage() {
     };
   }, [activeId, supabase]);
 
+  // Keep the newest message in view.
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, activeId]);
+
   async function sendReply() {
     const text = reply.trim();
     if (!text || !activeId) return;
@@ -99,49 +125,72 @@ export default function InboxPage() {
           activeId ? "hidden sm:block" : "block"
         }`}
       >
-        {conversations.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => setActiveId(c.id)}
-            className={`block w-full border-b border-line px-5 py-3.5 text-left ${
-              activeId === c.id ? "bg-paper" : "bg-white"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-ink">
-                {c.visitor_name || "Website visitor"}
-              </span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                  c.status === "open"
-                    ? "bg-blue/10 text-blue"
-                    : c.status === "answered"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-gray-100 text-mute"
-                }`}
-              >
-                {c.status}
-              </span>
-            </div>
-            <div className="mt-1 text-[11.5px] text-mute">
-              {new Date(c.created_at).toLocaleString()}
-            </div>
-            {(c.visitor_phone || c.visitor_email) && (
-              <div className="mt-0.5 truncate text-[11.5px] text-mute">
-                {c.visitor_phone || c.visitor_email}
+        <div className="border-b border-line px-5 py-2.5 text-[12.5px] text-mute">
+          {waiting > 0 ? (
+            <span className="font-semibold text-blue">
+              {waiting} waiting for a reply
+            </span>
+          ) : (
+            "All caught up"
+          )}
+        </div>
+
+        {conversations.map((c) => {
+          const waitingOnUs = needsReply(c);
+          const overdue = waitingOnUs && c.status === "timed_out";
+          return (
+            <button
+              key={c.id}
+              onClick={() => setActiveId(c.id)}
+              className={`block w-full border-b border-line px-5 py-3.5 text-left ${
+                activeId === c.id ? "bg-paper" : "bg-white"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span
+                  className={`truncate text-sm text-ink ${
+                    waitingOnUs ? "font-semibold" : "font-medium"
+                  }`}
+                >
+                  {c.visitor_name || "Website visitor"}
+                </span>
+                <span
+                  className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                    overdue
+                      ? "bg-amber-100 text-amber-700"
+                      : waitingOnUs
+                      ? "bg-blue/10 text-blue"
+                      : "bg-green-100 text-green-700"
+                  }`}
+                >
+                  {overdue ? "Overdue" : waitingOnUs ? "Needs reply" : "Replied"}
+                </span>
               </div>
-            )}
-          </button>
-        ))}
+              {c.last_message_preview && (
+                <div
+                  className={`mt-1 truncate text-[12.5px] ${
+                    waitingOnUs ? "text-ink" : "text-mute"
+                  }`}
+                >
+                  {c.last_message_preview}
+                </div>
+              )}
+              <div className="mt-1 truncate text-[11.5px] text-mute">
+                {formatWhen(c.last_message_at ?? c.created_at)}
+                {(c.visitor_phone || c.visitor_email) && (
+                  <span> · {c.visitor_phone || c.visitor_email}</span>
+                )}
+              </div>
+            </button>
+          );
+        })}
         {conversations.length === 0 && (
-          <p className="px-5 py-6 text-sm text-mute">
-            No conversations yet.
-          </p>
+          <p className="px-5 py-6 text-sm text-mute">No conversations yet.</p>
         )}
       </div>
 
       {/* Thread — hidden on mobile until a conversation is selected */}
-      <div className={`flex-1 flex-col sm:flex ${activeId ? "flex" : "hidden"}`}>
+      <div className={`min-w-0 flex-1 flex-col sm:flex ${activeId ? "flex" : "hidden"}`}>
         {!activeId ? (
           <div className="flex flex-1 items-center justify-center text-sm text-mute">
             Select a conversation
@@ -189,6 +238,7 @@ export default function InboxPage() {
                   {m.body}
                 </div>
               ))}
+              <div ref={bottomRef} />
             </div>
             <div className="flex gap-2 border-t border-line bg-white p-4">
               <input

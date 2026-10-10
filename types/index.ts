@@ -5,6 +5,9 @@ export interface Conversation {
   visitor_name: string | null;
   visitor_email: string | null;
   visitor_phone: string | null;
+  last_message_at: string;
+  last_sender: string | null;
+  last_message_preview: string | null;
   status: ConversationStatus;
   created_at: string;
   replied_at: string | null;
