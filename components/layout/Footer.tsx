@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoFull } from "@/components/ui/Logo";
 import { site } from "@/lib/site";
 
 const links = [
@@ -9,6 +10,7 @@ const links = [
   { href: "/resources", label: "Resources" },
   { href: "/tools", label: "Tools" },
   { href: "/contact", label: "Contact" },
+  { href: "/login", label: "Login" },
 ];
 
 export default function Footer() {
@@ -16,16 +18,7 @@ export default function Footer() {
     <footer className="bg-navy pb-9 pt-14 text-[#9FB4CC]">
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-8 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <div className="flex items-center gap-2.5 font-bold text-white">
-            <svg width="22" height="19" viewBox="0 0 40 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 34V4L11 15V34H0Z" fill="#fff" />
-              <path d="M22 34V4L11 15L22 26V34Z" fill="#fff" />
-              <rect x="24" y="20" width="4.4" height="14" fill="#1268E8" />
-              <rect x="30" y="14" width="4.4" height="20" fill="#3C8CFF" />
-              <rect x="36" y="8" width="4" height="26" fill="#1268E8" />
-            </svg>
-            MAJEURS LTD
-          </div>
+          <LogoFull height={52} reversed />
           <p className="mt-3.5 max-w-xs text-[13.5px] text-[#7E93AC]">
             Accounting, tax and advisory services for businesses, startups
             and individuals across Kenya.

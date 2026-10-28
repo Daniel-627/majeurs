@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LogoFull } from "@/components/ui/Logo";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { AnimatePresence } from "motion/react";
@@ -38,14 +39,7 @@ export default function Navbar() {
           href="/"
           className="flex items-center gap-2.5 text-[17px] font-bold tracking-tight"
         >
-          <svg width="26" height="22" viewBox="0 0 40 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 34V4L11 15V34H0Z" fill="#0B2035" />
-            <path d="M22 34V4L11 15L22 26V34Z" fill="#0B2035" />
-            <rect x="24" y="20" width="4.4" height="14" fill="#1268E8" />
-            <rect x="30" y="14" width="4.4" height="20" fill="#3C8CFF" />
-            <rect x="36" y="8" width="4" height="26" fill="#1268E8" />
-          </svg>
-          MAJEURS LTD
+          <LogoFull height={40} eager />
         </Link>
 
         {/* Desktop links */}
@@ -71,6 +65,12 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/login"
+            className="hidden px-1 text-[14.5px] font-medium text-mute transition-colors hover:text-ink md:inline-block"
+          >
+            Login
+          </Link>
           <Link
             href="/contact"
             className="hidden whitespace-nowrap rounded-full bg-blue px-5 py-2.5 text-sm font-semibold text-white sm:inline-block"
@@ -125,6 +125,14 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+              <Link
+                href="/login"
+                className={`rounded-lg px-3.5 py-2.5 text-[15px] font-medium ${
+                  isActive("/login") ? "bg-paper text-ink" : "text-mute"
+                }`}
+              >
+                Login
+              </Link>
               <Link
                 href="/contact"
                 className="mt-2 rounded-lg bg-navy px-3.5 py-3 text-center text-[15px] font-semibold text-white"

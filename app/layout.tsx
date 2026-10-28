@@ -51,6 +51,7 @@ const organizationJsonLd = {
   "@type": "AccountingService",
   name: site.name,
   url: site.url,
+  logo: `${site.url}${site.logo}`,
   description: site.description,
   telephone: site.phone,
   email: site.email,

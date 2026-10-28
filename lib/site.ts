@@ -7,6 +7,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://majeurs.co.ke";
 export const site = {
   name: "Majeurs Ltd",
   url: SITE_URL,
+  logo: "/images/logo-square.png",
   description:
     "Professional accounting, tax, and advisory services for businesses, startups, individuals and organizations across Kenya.",
 

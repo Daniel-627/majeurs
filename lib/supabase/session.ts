@@ -29,10 +29,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Not logged in and trying to reach the staff inbox → send to /login
+  // Not logged in and trying to reach the staff inbox → send to the staff
+  // sign-in. (Not /login: that is the public page which always answers
+  // "Only restricted authorisation", so staff couldn't sign in from there.)
   if (!user && request.nextUrl.pathname.startsWith("/inbox")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/staff-login";
     return NextResponse.redirect(url);
   }
 
